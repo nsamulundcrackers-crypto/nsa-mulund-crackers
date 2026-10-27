@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NSA Mulund Crackers — Diwali Fireworks Shop</title>
+<meta name="description" content="Buy Diwali crackers online from NSA Mulund Crackers: sparklers, flower pots, chakkars, bombs and more.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="hdr" id="top">
+  <a class="logo" href="#top" aria-label="NSA Mulund Crackers home">
+    <svg viewBox="0 0 64 64" width="52" height="52" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#45216D" stroke="#FFD166" stroke-width="3"/><g stroke="#FFD166" stroke-width="3" stroke-linecap="round"><path d="M32 8v10M32 46v10M8 32h10M46 32h10M15 15l7 7M42 42l7 7M49 15l-7 7M22 42l-7 7"/></g><circle cx="32" cy="32" r="8" fill="#FF8C42"/><path d="M32 26c3 3 3 7 0 10-3-3-3-7 0-10z" fill="#D62828"/></svg>
+    <span class="brand"><b>NSA MULUND</b><i>CRACKERS</i></span>
+  </a>
+  <button class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="nav">☰</button>
+  <nav id="nav" class="nav">
+    <a href="#top">Home</a><a href="#shop">Shop Firecrackers</a><a href="#categories">Product Categories</a><a href="#offers">Special Offers</a><a href="#how">How to Order</a><a href="#contact">Contact Us</a>
+  </nav>
+  <div class="hcontact"><a id="hPhone" href="#"></a><a id="hEmail" href="#" hidden></a></div>
+  <button class="cartbtn" id="cartBtn" aria-label="Open cart">🛒<span id="cartCount">0</span></button>
+</header>
+
+<main>
+<section class="hero">
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <div class="lanterns" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <div class="heroin">
+    <h1>Celebrate Diwali with NSA Mulund Crackers!</h1>
+    <p>Bring Home the Sparkle, Joy, and Magic of Diwali.</p>
+    <div class="btns"><a class="btn gold" href="#shop">Shop Now</a><a class="btn ghost" href="#categories">Explore Categories</a></div>
+    <div class="diyas" aria-hidden="true">🪔 🪔 🪔</div>
+  </div>
+</section>
+
+<section id="categories" class="sec"><h2>Product Categories</h2><div class="divider" aria-hidden="true">❖ ✦ ❖</div><div id="catGrid" class="catgrid"></div></section>
+
+<section id="shop" class="sec">
+  <h2>Shop Firecrackers</h2><div class="divider" aria-hidden="true">❖ ✦ ❖</div>
+  <div class="chips" id="chips" role="tablist" aria-label="Categories"></div>
+  <div class="tools">
+    <label class="sr" for="q">Search products</label><input id="q" type="search" placeholder="Search products…">
+    <label class="sr" for="sort">Sort</label>
+    <select id="sort"><option value="">Sort: Default</option><option value="asc">Price: Low to High</option><option value="desc">Price: High to Low</option></select>
+    <label class="chk"><input type="checkbox" id="featOnly"> Featured only</label>
+  </div>
+  <div id="grid" class="grid" aria-live="polite"></div>
+</section>
+
+<section id="offers" class="sec"><h2>Special Offers</h2><div class="divider" aria-hidden="true">❖ ✦ ❖</div><div id="offerGrid" class="grid"></div><p id="noOffer" class="note">No special offers right now. Check back soon!</p></section>
+
+<section id="how" class="sec"><h2>How to Order</h2><div class="divider" aria-hidden="true">❖ ✦ ❖</div>
+<ol class="steps"><li>Browse and add crackers to your cart.</li><li>Open the cart and tap Checkout.</li><li>Enter your delivery details and review the order.</li><li>Confirm. We will contact you to confirm availability, payment and delivery.</li></ol></section>
+
+<section id="safety" class="sec safety"><h2>Safety &amp; Legal Information</h2>
+<ul><li>Fireworks may be sold and delivered only where permitted by local law. We do not promise delivery to every location.</li><li>Buyers must meet the minimum legal age. Children must only use fireworks under adult supervision.</li><li>Use outdoors in open areas, keep water nearby, never relight a dud, keep away from flammable items.</li><li>Follow all local rules, permitted hours and noise limits.</li></ul>
+<details><summary>Delivery Policy</summary><p id="pDelivery"></p></details>
+<details><summary>Cancellation Policy</summary><p id="pCancel"></p></details>
+<details><summary>Refund Policy</summary><p id="pRefund"></p></details>
+<details><summary>Terms &amp; Conditions</summary><p id="pTerms"></p></details></section>
+
+<section id="contact" class="sec"><h2>Contact Us</h2><div class="divider" aria-hidden="true">❖ ✦ ❖</div>
+<p class="note"><b>NSA Mulund Crackers</b> · Mobile: <a id="cPhone" href="#"></a> <span id="cEmailWrap" hidden>· Email: <a id="cEmail" href="#"></a></span></p></section>
+</main>
+
+<footer class="foot">© <span id="yr"></span> NSA Mulund Crackers. Order receipt does not mean payment or delivery is complete. <a href="#admin" id="adminLink">Owner</a></footer>
+<a id="wa" class="wa" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">💬</a>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-label="Shopping cart">
+  <div class="dh"><h2>Your Cart</h2><button class="x" data-close aria-label="Close">✕</button></div>
+  <div id="cartBody" class="dbody"></div>
+  <div class="df" id="cartFoot"></div>
+</aside>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="mbox">
+    <button class="x" data-close aria-label="Close">✕</button>
+    <div id="stepForm">
+      <h2 id="mTitle">Checkout</h2>
+      <form id="form" novalidate>
+        <div class="f2"><div><label for="fName">Full Name *</label><input id="fName" autocomplete="name"><small class="err" data-for="fName"></small></div>
+        <div><label for="fMobile">Mobile Number *</label><input id="fMobile" inputmode="numeric" maxlength="10" autocomplete="tel-national"><small class="err" data-for="fMobile"></small></div></div>
+        <div class="f2"><div><label for="fHouse">House/Flat Number *</label><input id="fHouse"><small class="err" data-for="fHouse"></small></div>
+        <div><label for="fBuilding">Building/Society Name *</label><input id="fBuilding"><small class="err" data-for="fBuilding"></small></div></div>
+        <label for="fStreet">Street and Area *</label><input id="fStreet"><small class="err" data-for="fStreet"></small>
+        <label for="fLandmark">Landmark</label><input id="fLandmark">
+        <div class="f3"><div><label for="fCity">City *</label><input id="fCity" value="Mumbai"><small class="err" data-for="fCity"></small></div>
+        <div><label for="fState">State *</label><input id="fState" value="Maharashtra"><small class="err" data-for="fState"></small></div>
+        <div><label for="fPin">PIN Code *</label><input id="fPin" inputmode="numeric" maxlength="6"><small class="err" data-for="fPin"></small></div></div>
+        <label for="fEmail">Email (optional)</label><input id="fEmail" type="email" autocomplete="email"><small class="err" data-for="fEmail"></small>
+        <label for="fNotes">Order Notes (optional)</label><textarea id="fNotes" rows="2" maxlength="300"></textarea>
+        <label class="chk"><input type="checkbox" id="fAgree"> I have reviewed my order and agree to the terms, delivery conditions and applicable fireworks laws (including age restrictions). *</label><small class="err" data-for="fAgree"></small>
+        <p class="note">Payment method: Cash on delivery / to be confirmed by us. No payment details are collected here.</p>
+        <button class="btn gold" type="submit">Review Order</button>
+      </form>
+    </div>
+    <div id="stepReview" hidden></div>
+    <div id="stepDone" hidden></div>
+  </div>
+</div>
+
+<div class="modal" id="admin" hidden role="dialog" aria-modal="true" aria-labelledby="aTitle">
+  <div class="mbox">
+    <button class="x" data-close aria-label="Close">✕</button>
+    <h2 id="aTitle">Product Management</h2>
+    <p class="note">Products added here are saved <b>in this browser only</b>. To publish them for all customers, tap “Export”, then copy the entries into <code>products.js</code> on GitHub (put photos in an <code>images/</code> folder) and add prices to the Apps Script <code>PRICES</code> list.</p>
+    <form id="aForm"><label for="aName">Name *</label><input id="aName" required>
+      <label for="aCat">Category *</label><select id="aCat"></select>
+      <label for="aPrice">Price ₹ (leave empty = “Price coming soon”)</label><input id="aPrice" type="number" min="1" step="1">
+      <label for="aMrp">Original price ₹ (optional)</label><input id="aMrp" type="number" min="1" step="1">
+      <label for="aDesc">Description</label><input id="aDesc">
+      <label for="aImg">Photo (optional)</label><input id="aImg" type="file" accept="image/*">
+      <button class="btn gold" type="submit">Add Product</button></form>
+    <div id="aList"></div>
+    <button class="btn ghost dark" id="aExport" type="button">Export products.js entries</button>
+    <textarea id="aOut" rows="6" readonly hidden></textarea>
+  </div>
+</div>
+<script src="products.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
