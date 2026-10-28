@@ -81,14 +81,11 @@
       <form id="form" novalidate>
         <div class="f2"><div><label for="fName">Full Name *</label><input id="fName" autocomplete="name"><small class="err" data-for="fName"></small></div>
         <div><label for="fMobile">Mobile Number *</label><input id="fMobile" inputmode="numeric" maxlength="10" autocomplete="tel-national"><small class="err" data-for="fMobile"></small></div></div>
-        <div class="f2"><div><label for="fHouse">House/Flat Number *</label><input id="fHouse"><small class="err" data-for="fHouse"></small></div>
-        <div><label for="fBuilding">Building/Society Name *</label><input id="fBuilding"><small class="err" data-for="fBuilding"></small></div></div>
-        <label for="fStreet">Street and Area *</label><input id="fStreet"><small class="err" data-for="fStreet"></small>
-        <label for="fLandmark">Landmark</label><input id="fLandmark">
+        <label for="fAddress">Complete Delivery Address * <small>(house/flat, building/society, street, area, landmark)</small></label><textarea id="fAddress" rows="4" maxlength="400" autocomplete="street-address"></textarea><small class="err" data-for="fAddress"></small>
         <div class="f3"><div><label for="fCity">City *</label><input id="fCity" value="Mumbai"><small class="err" data-for="fCity"></small></div>
         <div><label for="fState">State *</label><input id="fState" value="Maharashtra"><small class="err" data-for="fState"></small></div>
         <div><label for="fPin">PIN Code *</label><input id="fPin" inputmode="numeric" maxlength="6"><small class="err" data-for="fPin"></small></div></div>
-        <label for="fEmail">Email (optional)</label><input id="fEmail" type="email" autocomplete="email"><small class="err" data-for="fEmail"></small>
+        <label for="fEmail">Email Address *</label><input id="fEmail" type="email" autocomplete="email"><small class="err" data-for="fEmail"></small>
         <label for="fNotes">Order Notes (optional)</label><textarea id="fNotes" rows="2" maxlength="300"></textarea>
         <label class="chk"><input type="checkbox" id="fAgree"> I have reviewed my order and agree to the terms, delivery conditions and applicable fireworks laws (including age restrictions). *</label><small class="err" data-for="fAgree"></small>
         <p class="note">Payment method: Cash on delivery / to be confirmed by us. No payment details are collected here.</p>
