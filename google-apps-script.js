@@ -3,9 +3,10 @@
  * Paste into script.google.com, set SPREADSHEET_ID, run setup() once, then deploy as Web App.
  * Prices are verified HERE; client-sent prices/totals are ignored.
  */
-const SPREADSHEET_ID = "PASTE_YOUR_SPREADSHEET_ID_HERE";
+const SPREADSHEET_ID = "1BKpfkos7HxZ_ePozbW2D2l6-v_gwmE4119tUl223fjE";
 const DELIVERY_CHARGE = 0;      // keep equal to CONFIG.deliveryCharge in products.js
 const MIN_ORDER = 0;            // keep equal to CONFIG.minOrder
+const ORDER_PREFIX = "NSA-26-";   // IDs: NSA-26-001, NSA-26-002, ...
 const INITIAL_STATUS = "Pending Confirmation";
 const PAYMENT_METHOD = "To be confirmed";
 
@@ -22,17 +23,31 @@ const PRICES = {
 const ORDER_HEADERS = ["Order ID", "Order Date and Time", "Customer Name", "Mobile Number", "Email Address", "Full Delivery Address", "City", "State", "PIN Code", "Product Details", "Total Items", "Subtotal", "Delivery Charges", "Discount", "Grand Total", "Order Status", "Payment Method", "Customer Notes", "Request Token"];
 const ITEM_HEADERS = ["Order ID", "Order Date and Time", "Customer Name", "Mobile Number", "Product ID", "Product", "Quantity", "Unit Price", "Line Total"];
 
-/** Run once from the editor: creates the two sheets with headers. */
-function setup() {
+/** Finds/creates the sheets and writes the header row (only if missing or different). */
+function sheets_() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  [["Orders", ORDER_HEADERS], ["Order Items", ITEM_HEADERS]].forEach(([n, h]) => {
-    const sh = ss.getSheetByName(n) || ss.insertSheet(n);
-    sh.getRange(1, 1, 1, h.length).setValues([h]).setFontWeight("bold").setBackground("#FFD166");
-    sh.setFrozenRows(1);
-  });
+  let os = ss.getSheetByName("Orders");
+  if (!os) { const first = ss.getSheets()[0]; if (first.getLastRow() === 0) { first.setName("Orders"); os = first; } else os = ss.insertSheet("Orders"); }
+  const is = ss.getSheetByName("Order Items") || ss.insertSheet("Order Items");
+  head_(os, ORDER_HEADERS); head_(is, ITEM_HEADERS);
+  return { os: os, is: is };
 }
+function head_(sh, h) {
+  const r = sh.getRange(1, 1, 1, h.length);
+  if (r.getValues()[0].join("|") !== h.join("|")) { r.setValues([h]).setFontWeight("bold").setBackground("#FFD166"); sh.setFrozenRows(1); }
+}
+/** One-time: run this from the Apps Script editor to create the headers now. */
+function setup() { sheets_(); }
 
-function doGet() { return out({ ok: true, service: "NSA Mulund Crackers order API" }); }
+function nextSeq_(os) { return (Number(PropertiesService.getScriptProperties().getProperty("ORDER_SEQ")) || Math.max(0, os.getLastRow() - 1)) + 1; }
+function idFor_(n) { return ORDER_PREFIX + String(n).padStart(3, "0"); }
+
+function doGet(e) {
+  if (e && e.parameter && e.parameter.action === "next") { // preview of the next Order ID (not reserved)
+    try { return out({ ok: true, orderId: idFor_(nextSeq_(sheets_().os)) }); } catch (x) { return out({ ok: false }); }
+  }
+  return out({ ok: true, service: "NSA Mulund Crackers order API" });
+}
 
 function doPost(e) {
   const lock = LockService.getScriptLock();
@@ -42,8 +57,7 @@ function doPost(e) {
     try { d = JSON.parse(e.postData.contents); } catch (x) { return out({ ok: false, error: "Invalid request." }); }
     const err = validate(d); if (err) return out({ ok: false, error: err });
 
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID), os = ss.getSheetByName("Orders"), is = ss.getSheetByName("Order Items");
-    if (!os || !is) return out({ ok: false, error: "Server not set up. Owner: run setup()." });
+    const sh = sheets_(), os = sh.os, is = sh.is; // creates headers automatically if missing
 
     const token = String(d.token), tCol = ORDER_HEADERS.length, last = os.getLastRow();
     if (last > 1) { // duplicate protection: same token = same order, return the original
@@ -55,17 +69,18 @@ function doPost(e) {
     }
     const c = d.customer, now = new Date(), tz = Session.getScriptTimeZone();
     const date = Utilities.formatDate(now, tz, "dd-MMM-yyyy HH:mm:ss");
-    const orderId = "NSA-" + Utilities.formatDate(now, tz, "yyMMdd") + "-" + Math.random().toString(36).slice(2, 7).toUpperCase();
+    const seq = nextSeq_(os), orderId = idFor_(seq);
 
     let sub = 0, qty = 0; const items = [];
     d.items.forEach(i => { const p = PRICES[i.id], line = p[1] * i.qty; sub += line; qty += i.qty; items.push({ id: i.id, name: p[0], qty: i.qty, price: p[1], line: line }); });
     const total = sub + DELIVERY_CHARGE;
     if (MIN_ORDER && sub < MIN_ORDER) return out({ ok: false, error: "Minimum order value is ₹" + MIN_ORDER + "." });
 
-    const address = [c.house, c.building, c.street, c.landmark ? "Near " + c.landmark : ""].filter(String).join(", ");
+    const address = String(c.address).replace(/\s*[\r\n]+\s*/g, ", ");
     const details = items.map(i => i.name + " x " + i.qty + " @ ₹" + i.price + " = ₹" + i.line).join(" | ");
     os.appendRow([orderId, date, S(c.name), S(c.mobile), S(c.email), S(address), S(c.city), S(c.state), S(c.pin), S(details), qty, sub, DELIVERY_CHARGE, 0, total, INITIAL_STATUS, PAYMENT_METHOD, S(c.notes), token]);
     items.forEach(i => is.appendRow([orderId, date, S(c.name), S(c.mobile), i.id, i.name, i.qty, i.price, i.line]));
+    PropertiesService.getScriptProperties().setProperty("ORDER_SEQ", String(seq));
     SpreadsheetApp.flush();
     return out({ ok: true, orderId: orderId, date: date, subtotal: sub, delivery: DELIVERY_CHARGE, discount: 0, total: total, items: items });
   } catch (x) {
@@ -80,9 +95,9 @@ function validate(d) {
   const c = d.customer || {};
   if (!str(c.name, 80)) return "Name is required.";
   if (!/^[6-9]\d{9}$/.test(String(c.mobile || ""))) return "Invalid mobile number.";
-  if (!str(c.house, 80) || !str(c.building, 120) || !str(c.street, 160) || !str(c.city, 60) || !str(c.state, 60)) return "Address is incomplete.";
+  if (!str(c.address, 400) || !str(c.city, 60) || !str(c.state, 60)) return "Address is incomplete.";
   if (!/^[1-9]\d{5}$/.test(String(c.pin || ""))) return "Invalid PIN code.";
-  if (c.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(c.email))) return "Invalid email.";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(c.email || ""))) return "A valid email address is required.";
   if (!Array.isArray(d.items) || !d.items.length || d.items.length > 60) return "Cart is empty.";
   const seen = {};
   for (const i of d.items) {
