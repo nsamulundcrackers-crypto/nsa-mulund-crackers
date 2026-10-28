@@ -125,63 +125,119 @@ async function peekId() {
   if (!C.endpoint) return;
   try { const r = await fetch(C.endpoint + "?action=next"); const d = await r.json(); if (d && d.ok && d.orderId && $("#revId")) $("#revId").textContent = d.orderId; } catch (x) { /* ID is still assigned on confirmation */ }
 }
+
 async function submit() {
-  if (busy) return; busy = true;
-  const b = $("#confirm"), er = $("#subErr"); b.disabled = true; b.textContent = "Placing order…"; er.textContent = "";
-  token = token || (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2));
+  if (busy) return;
+
+  busy = true;
+
+  const b = $("#confirm");
+  const er = $("#subErr");
+
+  b.disabled = true;
+  b.textContent = "Placing order…";
+  er.textContent = "";
+
+  token = token || (
+    crypto.randomUUID
+      ? crypto.randomUUID()
+      : Date.now() + "-" + Math.random().toString(36).slice(2)
+  );
+
   const t = totals();
-  const payload = { token, customer: { name: val("Name"), mobile: val("Mobile"), email: val("Email"), address: val("Address"), city: val("City"), state: val("State"), pin: val("Pin"), notes: val("Notes") }, items: t.lines.map(l => ({ id: l.p.id, qty: l.q })), clientTotal: t.total };
+
+  const payload = {
+    token,
+    customer: {
+      name: val("Name"),
+      mobile: val("Mobile"),
+      email: val("Email"),
+      address: val("Address"),
+      city: val("City"),
+      state: val("State"),
+      pin: val("Pin"),
+      notes: val("Notes")
+    },
+    items: t.lines.map(l => ({
+      id: l.p.id,
+      qty: l.q
+    })),
+    clientTotal: t.total
+  };
+
+  let timeoutId;
+
   try {
-    if (!C.endpoint) throw new Error("Online ordering is not set up yet. Please contact us on WhatsApp or phone.");
-    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 30000);
-    // text/plain avoids a CORS preflight, which Google Apps Script does not support.
-    const r = await fetch(C.endpoint, {
-  method: "POST",
-  headers: {
-    "Content-Type": "text/plain;charset=utf-8"
-  },
-  body: JSON.stringify(payload),
-  redirect: "follow",
-  signal: ctl.signal
-});
+    if (!C.endpoint) {
+      throw new Error(
+        "Online ordering is not set up yet. Please contact us on WhatsApp or phone."
+      );
+    }
 
-const responseText = await r.text();
+    const ctl = new AbortController();
 
-console.log("Apps Script HTTP status:", r.status);
-console.log("Apps Script response:", responseText);
+    timeoutId = setTimeout(() => ctl.abort(), 30000);
 
-let d;
+    const response = await fetch(C.endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload),
+      redirect: "follow",
+      signal: ctl.signal
+    });
 
-try {
-  d = JSON.parse(responseText);
-} catch (parseError) {
-  throw new Error(
-    "The server returned an invalid response. Check the browser console."
-  );
+    const responseText = await response.text();
+
+    console.log("Apps Script HTTP status:", response.status);
+    console.log("Apps Script response:", responseText);
+
+    let result;
+
+    try {
+      result = JSON.parse(responseText);
+    } catch (parseError) {
+      throw new Error(
+        "The server returned an invalid response. Please check the browser console."
+      );
+    }
+
+    if (!response.ok || !result || result.ok !== true || !result.orderId) {
+      throw new Error(
+        (result && result.error) ||
+        "The order could not be saved. Please try again."
+      );
+    }
+
+    done(result);
+
+    token = null;
+    cart = {};
+    saveCart();
+
+    $("#form").reset();
+    $("#fCity").value = "Mumbai";
+    $("#fState").value = "Maharashtra";
+
+  } catch (error) {
+    console.error("Order submission failed:", error);
+
+    er.textContent = error.name === "AbortError"
+      ? "The request timed out. Please check your connection and try again — your cart is safe."
+      : error instanceof TypeError
+        ? "Could not reach the server. Please check your connection and try again — your cart is safe."
+        : error.message;
+
+    b.disabled = false;
+    b.textContent = "Confirm Order";
+
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+    busy = false;
+  }
 }
 
-if (!r.ok || !d || d.ok !== true || !d.orderId) {
-  throw new Error(
-    (d && d.error) || "The order could not be saved. Please try again."
-  );
-}
-
-done(d);
-token = null;
-cart = {};
-saveCart();
-$("#form").reset();
-$("#fCity").value = "Mumbai";
-$("#fState").value = "Maharashtra";
-    clearTimeout(to);
-    const d = await r.json();
-    if (!d || d.ok !== true || !d.orderId) throw new Error((d && d.error) || "The order could not be saved. Please try again.");
-    done(d); token = null; cart = {}; saveCart(); $("#form").reset(); $("#fCity").value = "Mumbai"; $("#fState").value = "Maharashtra";
-  } catch (x) {
-    er.textContent = x.name === "AbortError" ? "The request timed out. Please check your connection and try again — your cart is safe." : (x instanceof SyntaxError || x instanceof TypeError) ? "Could not reach the server. Please check your connection and try again — your cart is safe." : x.message;
-    b.disabled = false; b.textContent = "Confirm Order";
-  } finally { busy = false; }
-}
 function done(d) {
   $("#stepDone").innerHTML = `<div class="thanks"><h2>Thank You for Shopping with NSA Mulund Crackers!</h2><p>Your order has been received.</p><p class="oid">${esc(d.orderId)}</p><p>${esc(d.date)} · ${esc(val("Name"))}</p>
   <div class="rev" style="text-align:left">${(d.items || []).map(i => `<p>${esc(i.name)} × ${i.qty} = <b>${inr(i.line)}</b></p>`).join("")}<hr><div class="tot big"><span>Total</span><span>${inr(d.total)}</span></div></div>
