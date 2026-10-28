@@ -1,10 +1,10 @@
 /* ===== OWNER SETTINGS & CATALOGUE — edit this file only ===== */
 window.CONFIG = {
   name: "NSA Mulund Crackers",
-  phone: "8559797877",          // 10-digit mobile (CONFIRM this is correct)
-  whatsapp: "918559797877",     // country code + number, no + or spaces
+  phone: "8779797855",          // 10-digit mobile
+  whatsapp: "918779797855",     // country code + number, no + or spaces
   email: "",                    // e.g. "yourname@gmail.com" (shown only if filled)
-  endpoint: "",                 // paste your Apps Script Web App URL (ends with /exec)
+  endpoint: "https://script.google.com/macros/s/AKfycbzfntb_OHiT8GDBZvWv5wkVBPEH7B-zclueVwzdMrhQ_J0bBkXrT15dxoJ3xGZZFvHO/exec",                 // paste your Apps Script Web App URL (ends with /exec)
   deliveryCharge: 0,            // ₹ — backend has its own copy (google-apps-script.js)
   minOrder: 0,                  // ₹ minimum order value
   policies: {
