@@ -46,11 +46,18 @@ function renderGrid() {
   const q = $("#q").value.trim().toLowerCase(), s = $("#sort").value, f = $("#featOnly").checked;
   let list = all().filter(p => (cat === "all" || p.cat === cat) && (!q || p.name.toLowerCase().includes(q)) && (!f || p.featured));
   if (s) list.sort((a, b) => (s === "asc" ? 1 : -1) * ((hasPrice(a) ? a.price : 1e12) - (hasPrice(b) ? b.price : 1e12)));
-  let html = list.map(cardHTML).join("");
-  if (!list.length) {
-    const none = !all().some(p => cat === "all" || p.cat === cat);
-    const m = { rockets: "No rocket products added yet. Please check back soon!", fancy: "No fancy fireworks products added yet. Please check back soon!" };
-    html = `<p class="empty">${none && !q ? (m[cat] || "No products added yet. Please check back soon!") : "No products match your search or filter."}</p>`;
+  const m = { rockets: "No rocket products added yet. Please check back soon!", fancy: "No fancy fireworks products added yet. Please check back soon!" };
+  let html;
+  $("#grid").className = cat === "all" ? "" : "grid";
+  if (cat === "all") { // one section per category, in the fixed category order
+    html = window.CATEGORIES.map(c => {
+      const L = list.filter(p => p.cat === c.id);
+      if (!L.length && (q || f)) return "";
+      return `<h3 class="cathead">${c.icon} ${esc(c.name)}</h3><div class="grid">${L.length ? L.map(cardHTML).join("") : `<p class="empty">${m[c.id] || "No " + esc(c.name) + " products added yet. Please check back soon!"}</p>`}</div>`;
+    }).join("") || `<p class="empty">No products match your search or filter.</p>`;
+  } else {
+    html = list.map(cardHTML).join("");
+    if (!list.length) { const none = !all().some(p => p.cat === cat); html = `<p class="empty">${none && !q && !f ? (m[cat] || "No " + esc(catName(cat)) + " products added yet. Please check back soon!") : "No products match your search or filter."}</p>`; }
   }
   $("#grid").innerHTML = html;
   $$("#chips .chip").forEach(b => b.setAttribute("aria-selected", b.dataset.chip === cat));
@@ -94,36 +101,78 @@ function validate() {
   const e = {};
   if (!val("Name")) e.fName = "Please enter your full name.";
   if (!/^[6-9]\d{9}$/.test(val("Mobile"))) e.fMobile = "Enter a valid 10-digit Indian mobile number.";
-  [["House", "house/flat number"], ["Building", "building/society name"], ["Street", "street and area"], ["City", "city"], ["State", "state"]].forEach(([k, n]) => { if (!val(k)) e["f" + k] = "Please enter your " + n + "."; });
+  if (!val("Address")) e.fAddress = "Please enter your complete delivery address.";
+  [["City", "city"], ["State", "state"]].forEach(([k, n]) => { if (!val(k)) e["f" + k] = "Please enter your " + n + "."; });
   if (!/^[1-9]\d{5}$/.test(val("Pin"))) e.fPin = "Enter a valid 6-digit PIN code.";
-  if (val("Email") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val("Email"))) e.fEmail = "Enter a valid email address.";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val("Email"))) e.fEmail = val("Email") ? "Enter a valid email address." : "Please enter your email address.";
   if (!$("#fAgree").checked) e.fAgree = "Please confirm to continue.";
   const t = totals(); if (!t.lines.length) e.fAgree = "Your cart is empty."; else if (C.minOrder && t.sub < C.minOrder) e.fAgree = "Minimum order value is " + inr(C.minOrder) + ".";
   $$(".err[data-for]").forEach(s => { s.textContent = e[s.dataset.for] || ""; const i = $("#" + s.dataset.for); i && i.classList.toggle("bad", !!e[s.dataset.for]); });
   const first = Object.keys(e)[0]; if (first) $("#" + first).focus();
   return !Object.keys(e).length;
 }
-const addr = () => [val("House"), val("Building"), val("Street"), val("Landmark") && "Near " + val("Landmark")].filter(Boolean).join(", ");
+const addr = () => val("Address").replace(/\s*[\r\n]+\s*/g, ", ");
 function showStep(n) { $("#stepForm").hidden = n !== "Form"; $("#stepReview").hidden = n !== "Review"; $("#stepDone").hidden = n !== "Done"; }
 function review() {
   const t = totals();
-  $("#stepReview").innerHTML = `<h2>Review Your Order</h2><div class="rev"><p><b>${esc(val("Name"))}</b> · ${esc(val("Mobile"))}${val("Email") ? " · " + esc(val("Email")) : ""}</p><p>${esc(addr())}, ${esc(val("City"))}, ${esc(val("State"))} – ${esc(val("Pin"))}</p>${val("Notes") ? `<p><i>Notes: ${esc(val("Notes"))}</i></p>` : ""}</div>
+  $("#stepReview").innerHTML = `<h2>Review Your Order</h2><p class="oid">Order ID: <span id="revId">assigned on confirmation</span></p><div class="rev"><p><b>${esc(val("Name"))}</b> · ${esc(val("Mobile"))}${val("Email") ? " · " + esc(val("Email")) : ""}</p><p>${esc(addr())}, ${esc(val("City"))}, ${esc(val("State"))} – ${esc(val("Pin"))}</p>${val("Notes") ? `<p><i>Notes: ${esc(val("Notes"))}</i></p>` : ""}</div>
   <div class="rev">${t.lines.map(l => `<p>${esc(l.p.name)} — ${l.q} × ${inr(l.p.price)} = <b>${inr(l.line)}</b></p>`).join("")}<hr><div class="tot"><span>Subtotal</span><span>${inr(t.sub)}</span></div><div class="tot"><span>Delivery</span><span>${inr(t.delivery)}</span></div><div class="tot big"><span>Grand Total</span><span>${inr(t.total)}</span></div></div>
   <p class="note">The final amount is verified by our server. Payment: to be confirmed by us.</p><p id="subErr" class="err" role="alert"></p>
   <button class="btn gold" id="confirm">Confirm Order</button><button class="btn ghost" id="editD">Edit Details</button>`;
-  showStep("Review");
+  showStep("Review"); peekId();
+}
+async function peekId() {
+  if (!C.endpoint) return;
+  try { const r = await fetch(C.endpoint + "?action=next"); const d = await r.json(); if (d && d.ok && d.orderId && $("#revId")) $("#revId").textContent = d.orderId; } catch (x) { /* ID is still assigned on confirmation */ }
 }
 async function submit() {
   if (busy) return; busy = true;
   const b = $("#confirm"), er = $("#subErr"); b.disabled = true; b.textContent = "Placing order…"; er.textContent = "";
   token = token || (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2));
   const t = totals();
-  const payload = { token, customer: { name: val("Name"), mobile: val("Mobile"), email: val("Email"), house: val("House"), building: val("Building"), street: val("Street"), landmark: val("Landmark"), city: val("City"), state: val("State"), pin: val("Pin"), notes: val("Notes") }, items: t.lines.map(l => ({ id: l.p.id, qty: l.q })), clientTotal: t.total };
+  const payload = { token, customer: { name: val("Name"), mobile: val("Mobile"), email: val("Email"), address: val("Address"), city: val("City"), state: val("State"), pin: val("Pin"), notes: val("Notes") }, items: t.lines.map(l => ({ id: l.p.id, qty: l.q })), clientTotal: t.total };
   try {
     if (!C.endpoint) throw new Error("Online ordering is not set up yet. Please contact us on WhatsApp or phone.");
     const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 30000);
     // text/plain avoids a CORS preflight, which Google Apps Script does not support.
-    const r = await fetch(C.endpoint, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload), signal: ctl.signal });
+    const r = await fetch(C.endpoint, {
+  method: "POST",
+  headers: {
+    "Content-Type": "text/plain;charset=utf-8"
+  },
+  body: JSON.stringify(payload),
+  redirect: "follow",
+  signal: ctl.signal
+});
+
+const responseText = await r.text();
+
+console.log("Apps Script HTTP status:", r.status);
+console.log("Apps Script response:", responseText);
+
+let d;
+
+try {
+  d = JSON.parse(responseText);
+} catch (parseError) {
+  throw new Error(
+    "The server returned an invalid response. Check the browser console."
+  );
+}
+
+if (!r.ok || !d || d.ok !== true || !d.orderId) {
+  throw new Error(
+    (d && d.error) || "The order could not be saved. Please try again."
+  );
+}
+
+done(d);
+token = null;
+cart = {};
+saveCart();
+$("#form").reset();
+$("#fCity").value = "Mumbai";
+$("#fState").value = "Maharashtra";
     clearTimeout(to);
     const d = await r.json();
     if (!d || d.ok !== true || !d.orderId) throw new Error((d && d.error) || "The order could not be saved. Please try again.");
