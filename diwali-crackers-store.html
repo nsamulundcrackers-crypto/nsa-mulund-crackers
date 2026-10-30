@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anaar & Co. — Fireworks Store</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --night: #140F20;
+    --panel: #1E1732;
+    --panel-light: #2A2140;
+    --gold: #E7B13B;
+    --ember: #E4572E;
+    --marigold: #F2A93B;
+    --cream: #F4EFE4;
+    --muted: #B4A9C9;
+    --line: rgba(244,239,228,0.12);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--night);color:var(--cream);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.display{font-family:'Fraunces',serif;}
+  ::selection{background:var(--gold);color:var(--night);}
+
+  /* subtle spark field behind header */
+  .sparkfield{
+    position:relative;
+    background:
+      radial-gradient(2px 2px at 10% 20%, rgba(231,177,59,0.8), transparent 60%),
+      radial-gradient(2px 2px at 85% 15%, rgba(228,87,46,0.7), transparent 60%),
+      radial-gradient(1.5px 1.5px at 60% 70%, rgba(244,239,228,0.6), transparent 60%),
+      radial-gradient(1.5px 1.5px at 30% 80%, rgba(231,177,59,0.6), transparent 60%),
+      radial-gradient(1.5px 1.5px at 92% 60%, rgba(244,239,228,0.5), transparent 60%),
+      linear-gradient(180deg, #17102A 0%, #140F20 100%);
+    border-bottom:1px solid var(--line);
+  }
+
+  header{max-width:1180px;margin:0 auto;padding:22px 24px 26px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand .mark{font-size:26px;}
+  .brand h1{margin:0;font-size:24px;font-weight:600;letter-spacing:0.2px;}
+  .brand span.tag{color:var(--muted);font-size:13px;font-family:'Inter',sans-serif;}
+
+  .cart-btn{
+    background:var(--panel-light);border:1px solid var(--line);color:var(--cream);
+    padding:10px 16px;border-radius:999px;display:flex;align-items:center;gap:10px;
+    cursor:pointer;font-size:14px;font-weight:600;transition:background .15s ease, transform .15s ease;
+  }
+  .cart-btn:hover{background:#342a4d;}
+  .cart-count{background:var(--ember);color:#fff;font-size:12px;min-width:20px;height:20px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 6px;}
+
+  .hero{max-width:1180px;margin:0 auto;padding:8px 24px 40px;}
+  .hero h2{font-size:38px;line-height:1.12;margin:0 0 10px;font-weight:600;max-width:640px;}
+  .hero p{color:var(--muted);max-width:520px;margin:0;font-size:15px;line-height:1.6;}
+
+  nav.cats{
+    max-width:1180px;margin:0 auto;padding:18px 24px;
+    display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;
+    position:sticky;top:0;background:var(--night);z-index:20;border-bottom:1px solid var(--line);
+  }
+  nav.cats::-webkit-scrollbar{display:none;}
+  .cat-chip{
+    flex:0 0 auto;padding:9px 16px;border-radius:999px;border:1px solid var(--line);
+    background:var(--panel);color:var(--muted);font-size:13.5px;font-weight:600;
+    cursor:pointer;white-space:nowrap;transition:all .15s ease;display:flex;align-items:center;gap:8px;
+  }
+  .cat-chip:hover{color:var(--cream);border-color:var(--gold);}
+  .cat-chip.active{background:var(--gold);color:#241A08;border-color:var(--gold);}
+
+  main{max-width:1180px;margin:0 auto;padding:28px 24px 90px;}
+  .cat-section{margin-bottom:52px;}
+  .cat-section h3{font-size:22px;margin:0 0 4px;font-weight:600;}
+  .cat-section .sub{color:var(--muted);font-size:13.5px;margin:0 0 20px;}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px;}
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;display:flex;flex-direction:column;transition:border-color .15s ease, transform .15s ease;
+  }
+  .card:hover{border-color:rgba(231,177,59,0.5);}
+  .thumb{
+    height:132px;display:flex;align-items:center;justify-content:center;font-size:46px;
+    position:relative;
+  }
+  .card-body{padding:14px 14px 16px;display:flex;flex-direction:column;gap:10px;flex:1;}
+  .card-body h4{margin:0;font-size:15px;font-weight:600;line-height:1.35;}
+  .card-body .unit{color:var(--muted);font-size:12px;}
+  .price-row{display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
+  .price{font-family:'Fraunces',serif;font-size:19px;font-weight:600;color:var(--gold);}
+
+  .qty-row{display:flex;align-items:center;gap:10px;}
+  .stepper{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .stepper button{background:var(--panel-light);color:var(--cream);border:none;width:28px;height:28px;cursor:pointer;font-size:15px;}
+  .stepper button:hover{background:#3a2f56;}
+  .stepper span{width:30px;text-align:center;font-size:13.5px;font-weight:600;}
+  .add-btn{
+    background:var(--ember);color:#fff;border:none;padding:8px 14px;border-radius:8px;
+    font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.2px;transition:background .15s ease;
+    flex:1;
+  }
+  .add-btn:hover{background:#c84a24;}
+  .add-btn.added{background:#3C8A5C;}
+
+  /* Cart drawer */
+  .overlay{position:fixed;inset:0;background:rgba(10,7,18,0.6);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:40;}
+  .overlay.open{opacity:1;pointer-events:auto;}
+  .drawer{
+    position:fixed;top:0;right:0;height:100%;width:400px;max-width:92vw;background:var(--panel);
+    border-left:1px solid var(--line);z-index:50;transform:translateX(100%);transition:transform .25s ease;
+    display:flex;flex-direction:column;
+  }
+  .drawer.open{transform:translateX(0);}
+  .drawer-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+  .drawer-head h3{margin:0;font-size:19px;}
+  .close-x{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;}
+  .drawer-body{flex:1;overflow-y:auto;padding:18px 22px;}
+  .drawer-foot{padding:18px 22px;border-top:1px solid var(--line);}
+
+  .cart-line{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);}
+  .cart-line .thumb-sm{width:52px;height:52px;border-radius:8px;background:var(--panel-light);display:flex;align-items:center;justify-content:center;font-size:24px;flex:0 0 auto;}
+  .cart-line-info{flex:1;display:flex;flex-direction:column;gap:6px;}
+  .cart-line-info .name{font-size:13.5px;font-weight:600;}
+  .cart-line-info .meta{font-size:12px;color:var(--muted);}
+  .cart-line-bottom{display:flex;align-items:center;justify-content:space-between;}
+  .remove-link{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;padding:0;}
+  .remove-link:hover{color:var(--ember);}
+
+  .empty-cart{color:var(--muted);font-size:13.5px;text-align:center;padding:60px 10px;}
+
+  .subtotal-row{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:6px;}
+  .total-row{display:flex;justify-content:space-between;font-size:18px;font-weight:700;font-family:'Fraunces',serif;color:var(--gold);margin:10px 0 16px;}
+  .primary-btn{
+    width:100%;background:var(--gold);color:#241A08;border:none;padding:13px;border-radius:10px;
+    font-size:14.5px;font-weight:700;cursor:pointer;transition:filter .15s ease;
+  }
+  .primary-btn:hover{filter:brightness(1.08);}
+  .primary-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .ghost-btn{
+    width:100%;background:transparent;color:var(--cream);border:1px solid var(--line);padding:12px;border-radius:10px;
+    font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;
+  }
+  .ghost-btn:hover{border-color:var(--gold);}
+
+  /* Checkout modal */
+  .modal-wrap{position:fixed;inset:0;background:rgba(10,7,18,0.72);z-index:60;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px;}
+  .modal-wrap.open{display:flex;}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:480px;max-width:100%;padding:28px 26px 30px;}
+  .modal h3{margin:0 0 4px;font-size:21px;}
+  .modal .step-sub{color:var(--muted);font-size:13px;margin:0 0 20px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+  .field input, .field textarea{
+    width:100%;background:var(--panel-light);border:1px solid var(--line);border-radius:8px;
+    color:var(--cream);padding:10px 12px;font-size:14px;font-family:'Inter',sans-serif;
+  }
+  .field input:focus, .field textarea:focus{outline:none;border-color:var(--gold);}
+  .field-row{display:flex;gap:12px;}
+  .field-row .field{flex:1;}
+
+  .qr-box{background:#fff;border-radius:12px;padding:18px;display:flex;align-items:center;justify-content:center;margin:16px 0;}
+  .pay-amount{text-align:center;font-family:'Fraunces',serif;font-size:26px;color:var(--gold);font-weight:700;margin:4px 0 2px;}
+  .pay-note{text-align:center;color:var(--muted);font-size:12.5px;margin-bottom:4px;}
+
+  .confirm-icon{width:56px;height:56px;border-radius:999px;background:#3C8A5C;color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px;}
+  .order-id{text-align:center;color:var(--muted);font-size:13px;margin-bottom:18px;}
+  .notice-list{list-style:none;padding:0;margin:0 0 18px;display:flex;flex-direction:column;gap:8px;}
+  .notice-list li{display:flex;gap:10px;font-size:13px;color:var(--cream);align-items:flex-start;}
+  .notice-list li .ic{color:var(--gold);}
+  .proto-note{background:rgba(231,177,59,0.1);border:1px solid rgba(231,177,59,0.3);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.6;margin-top:6px;}
+
+  .back-link{background:none;border:none;color:var(--muted);font-size:12.5px;cursor:pointer;margin-bottom:14px;padding:0;text-decoration:underline;}
+
+  footer{border-top:1px solid var(--line);padding:30px 24px;text-align:center;color:var(--muted);font-size:12.5px;}
+
+  @media (max-width:640px){
+    .hero h2{font-size:29px;}
+    header{padding:18px 18px 20px;}
+    main{padding:20px 16px 70px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="sparkfield">
+  <header>
+    <div class="brand">
+      <span class="mark">🪔</span>
+      <div>
+        <h1>Anaar &amp; Co.</h1>
+      </div>
+      <span class="tag">— festival fireworks, delivered</span>
+    </div>
+    <button class="cart-btn" id="cartBtn">
+      🧺 Cart <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </header>
+  <div class="hero">
+    <h2>Light up this Diwali, sorted by category.</h2>
+    <p>Browse sparklers, ground spinners, aerial shots and more. Add what you need, pay by UPI, and we'll get it to your door.</p>
+  </div>
+</div>
+
+<nav class="cats" id="catNav"></nav>
+
+<main id="mainContent"></main>
+
+<footer>
+  Prototype storefront — built to demonstrate catalog, cart and checkout flow. Sale of fireworks is regulated in most regions; a live version of this site would need age verification and licensing details at checkout.
+</footer>
+
+<!-- Cart Drawer -->
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h3>Your cart</h3>
+    <button class="close-x" id="closeDrawer">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-foot" id="drawerFoot"></div>
+</div>
+
+<!-- Checkout Modal -->
+<div class="modal-wrap" id="modalWrap">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+/* ---------------- Data ---------------- */
+const CATEGORIES = [
+  { id:'sparklers', name:'Sparklers', icon:'✨', items:[
+    { name:'7cm Electric Sparklers', unit:'Box of 10', price:60, emoji:'✨' },
+    { name:'10cm Colour Sparklers', unit:'Box of 10', price:90, emoji:'✨' },
+    { name:'15cm Green Sparklers', unit:'Box of 10', price:130, emoji:'✨' },
+    { name:'Flower Sparklers', unit:'Box of 5', price:110, emoji:'✨' },
+  ]},
+  { id:'flowerpots', name:'Flower Pots', icon:'🪷', items:[
+    { name:'Small Flower Pot', unit:'Pack of 4', price:150, emoji:'🪷' },
+    { name:'Deluxe Colour Flower Pot', unit:'Pack of 2', price:220, emoji:'🪷' },
+    { name:'Musical Flower Pot', unit:'Pack of 2', price:280, emoji:'🪷' },
+    { name:'Twin Colour Fountain', unit:'Pack of 3', price:260, emoji:'🪷' },
+  ]},
+  { id:'ground', name:'Ground Chakkars', icon:'🌀', items:[
+    { name:'Classic Ground Chakkar', unit:'Box of 10', price:140, emoji:'🌀' },
+    { name:'Deluxe Wheel Chakkar', unit:'Box of 6', price:180, emoji:'🌀' },
+    { name:'Colour Smoke Chakkar', unit:'Box of 5', price:190, emoji:'🌀' },
+  ]},
+  { id:'sound', name:'One Sound Crackers', icon:'💥', items:[
+    { name:'Lakshmi Crackers', unit:'Box of 10', price:120, emoji:'💥' },
+    { name:'King Crackers', unit:'Box of 5', price:160, emoji:'💥' },
+    { name:'Two Sound Crackers', unit:'Box of 10', price:150, emoji:'💥' },
+  ]},
+  { id:'bijli', name:'Bijli Crackers', icon:'⚡', items:[
+    { name:'Bijli Crackers Mini', unit:'Box of 20', price:80, emoji:'⚡' },
+    { name:'Bijli Crackers Standard', unit:'Box of 10', price:100, emoji:'⚡' },
+  ]},
+  { id:'bombs', name:'Bombs', icon:'💣', items:[
+    { name:'Sound Bomb Classic', unit:'Box of 10', price:200, emoji:'💣' },
+    { name:'Deluxe Sound Bomb', unit:'Box of 5', price:240, emoji:'💣' },
+    { name:'Atom Bomb', unit:'Box of 5', price:260, emoji:'💣' },
+  ]},
+  { id:'rockets', name:'Rockets', icon:'🚀', items:[
+    { name:'Colour Rain Rocket', unit:'Box of 5', price:190, emoji:'🚀' },
+    { name:'Whistling Rocket', unit:'Box of 5', price:170, emoji:'🚀' },
+    { name:'Sky Shot Rocket', unit:'Box of 3', price:250, emoji:'🚀' },
+  ]},
+  { id:'fancy', name:'Fancy Fireworks', icon:'🎆', items:[
+    { name:'7 Shot Aerial Cake', unit:'Box of 1', price:350, emoji:'🎆' },
+    { name:'25 Shot Fancy Cake', unit:'Box of 1', price:900, emoji:'🎆' },
+    { name:'Colour Fountain Fancy', unit:'Box of 2', price:420, emoji:'🎆' },
+    { name:'Sky Flower Combo', unit:'Box of 1', price:550, emoji:'🎆' },
+  ]},
+];
+
+// give every item a stable unique id
+let _idc = 0;
+CATEGORIES.forEach(cat => cat.items.forEach(it => { it.id = 'p' + (_idc++); it.cat = cat.id; }));
+const ALL_ITEMS = {};
+CATEGORIES.forEach(cat => cat.items.forEach(it => ALL_ITEMS[it.id] = it));
+
+/* ---------------- State ---------------- */
+const state = {
+  qtyDraft: {},   // itemId -> quantity currently selected on card (before adding)
+  cart: {},       // itemId -> quantity in cart
+  activeCat: CATEGORIES[0].id,
+};
+CATEGORIES.forEach(cat => cat.items.forEach(it => state.qtyDraft[it.id] = 1));
+
+const fmt = n => '₹' + n.toLocaleString('en-IN');
+
+/* ---------------- Render: nav + catalog ---------------- */
+function renderNav(){
+  const nav = document.getElementById('catNav');
+  nav.innerHTML = CATEGORIES.map(cat => `
+    <button class="cat-chip ${cat.id===state.activeCat?'active':''}" data-cat="${cat.id}">
+      <span>${cat.icon}</span>${cat.name}
+    </button>
+  `).join('');
+  nav.querySelectorAll('.cat-chip').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.getElementById(cat_section_id(btn.dataset.cat)).scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+}
+function cat_section_id(id){ return 'sec-' + id; }
+
+function renderCatalog(){
+  const main = document.getElementById('mainContent');
+  main.innerHTML = CATEGORIES.map(cat => `
+    <section class="cat-section" id="${cat_section_id(cat.id)}">
+      <h3>${cat.icon} ${cat.name}</h3>
+      <p class="sub">${cat.items.length} items</p>
+      <div class="grid">
+        ${cat.items.map(it => cardHTML(it)).join('')}
+      </div>
+    </section>
+  `).join('');
+
+  main.querySelectorAll('[data-step]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.id;
+      const delta = parseInt(btn.dataset.step);
+      state.qtyDraft[id] = Math.max(1, (state.qtyDraft[id]||1) + delta);
+      document.getElementById('qty-'+id).textContent = state.qtyDraft[id];
+    });
+  });
+  main.querySelectorAll('[data-add]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.add;
+      const qty = state.qtyDraft[id] || 1;
+      state.cart[id] = (state.cart[id]||0) + qty;
+      updateCartCount();
+      btn.textContent = 'Added';
+      btn.classList.add('added');
+      setTimeout(()=>{ btn.textContent='Add to cart'; btn.classList.remove('added'); }, 900);
+    });
+  });
+
+  // scroll-spy to highlight active chip
+  const sections = CATEGORIES.map(c=>document.getElementById(cat_section_id(c.id)));
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        state.activeCat = e.target.id.replace('sec-','');
+        renderNav();
+      }
+    });
+  }, { rootMargin: '-40% 0px -50% 0px' });
+  sections.forEach(s=>obs.observe(s));
+}
+
+function cardHTML(it){
+  return `
+    <div class="card">
+      <div class="thumb" style="background:${thumbBg(it.cat)}">${it.emoji}</div>
+      <div class="card-body">
+        <h4>${it.name}</h4>
+        <div class="unit">${it.unit}</div>
+        <div class="price-row">
+          <span class="price">${fmt(it.price)}</span>
+          <div class="stepper">
+            <button data-step="-1" data-id="${it.id}">−</button>
+            <span id="qty-${it.id}">${state.qtyDraft[it.id]}</span>
+            <button data-step="1" data-id="${it.id}">+</button>
+          </div>
+        </div>
+        <div class="qty-row">
+          <button class="add-btn" data-add="${it.id}">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function thumbBg(catId){
+  const map = {
+    sparklers:'linear-gradient(135deg,#3a2f56,#2A2140)',
+    flowerpots:'linear-gradient(135deg,#4a2f3f,#2A2140)',
+    ground:'linear-gradient(135deg,#2f4a3f,#2A2140)',
+    sound:'linear-gradient(135deg,#4a3a2f,#2A2140)',
+    bijli:'linear-gradient(135deg,#3a4a2f,#2A2140)',
+    bombs:'linear-gradient(135deg,#4a2f2f,#2A2140)',
+    rockets:'linear-gradient(135deg,#2f3a4a,#2A2140)',
+    fancy:'linear-gradient(135deg,#4a3f2f,#2A2140)',
+  };
+  return map[catId] || 'var(--panel-light)';
+}
+
+/* ---------------- Cart drawer ---------------- */
+function updateCartCount(){
+  const count = Object.values(state.cart).reduce((a,b)=>a+b,0);
+  document.getElementById('cartCount').textContent = count;
+  renderDrawer();
+}
+function cartTotal(){
+  return Object.entries(state.cart).reduce((sum,[id,qty])=> sum + ALL_ITEMS[id].price*qty, 0);
+}
+function renderDrawer(){
+  const body = document.getElementById('drawerBody');
+  const foot = document.getElementById('drawerFoot');
+  const entries = Object.entries(state.cart).filter(([,qty])=>qty>0);
+
+  if(entries.length===0){
+    body.innerHTML = `<div class="empty-cart">Your cart is empty.<br>Add some crackers to get started.</div>`;
+    foot.innerHTML = '';
+    return;
+  }
+
+  body.innerHTML = entries.map(([id,qty])=>{
+    const it = ALL_ITEMS[id];
+    return `
+      <div class="cart-line">
+        <div class="thumb-sm">${it.emoji}</div>
+        <div class="cart-line-info">
+          <div class="name">${it.name}</div>
+          <div class="meta">${it.unit} · ${fmt(it.price)} each</div>
+          <div class="cart-line-bottom">
+            <div class="stepper">
+              <button data-cstep="-1" data-cid="${id}">−</button>
+              <span>${qty}</span>
+              <button data-cstep="1" data-cid="${id}">+</button>
+            </div>
+            <button class="remove-link" data-remove="${id}">Remove</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const total = cartTotal();
+  foot.innerHTML = `
+    <div class="subtotal-row"><span>Items</span><span>${entries.reduce((a,[,q])=>a+q,0)}</span></div>
+    <div class="total-row"><span>Total</span><span>${fmt(total)}</span></div>
+    <button class="primary-btn" id="checkoutBtn">Proceed to checkout</button>
+  `;
+
+  body.querySelectorAll('[data-cstep]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.cid;
+      const delta = parseInt(btn.dataset.cstep);
+      state.cart[id] = Math.max(0, (state.cart[id]||0)+delta);
+      if(state.cart[id]===0) delete state.cart[id];
+      updateCartCount();
+    });
+  });
+  body.querySelectorAll('[data-remove]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      delete state.cart[btn.dataset.remove];
+      updateCartCount();
+    });
+  });
+  const co = document.getElementById('checkoutBtn');
+  if(co) co.addEventListener('click', openCheckout);
+}
+
+document.getElementById('cartBtn').addEventListener('click', ()=>{
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+});
+function closeDrawerFn(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+document.getElementById('closeDrawer').addEventListener('click', closeDrawerFn);
+document.getElementById('overlay').addEventListener('click', ()=>{ closeDrawerFn(); closeModal(); });
+
+/* ---------------- Checkout modal ---------------- */
+const checkoutState = { step:'address', address:{} };
+
+function openCheckout(){
+  closeDrawerFn();
+  checkoutState.step = 'address';
+  document.getElementById('modalWrap').classList.add('open');
+  renderModal();
+}
+function closeModal(){
+  document.getElementById('modalWrap').classList.remove('open');
+}
+
+function renderModal(){
+  const m = document.getElementById('modalContent');
+  if(checkoutState.step==='address') m.innerHTML = addressStepHTML();
+  else if(checkoutState.step==='payment') m.innerHTML = paymentStepHTML();
+  else if(checkoutState.step==='confirmed') m.innerHTML = confirmedStepHTML();
+  wireModal();
+  if(checkoutState.step==='payment') drawQR();
+}
+
+function addressStepHTML(){
+  const a = checkoutState.address;
+  return `
+    <h3>Delivery address</h3>
+    <p class="step-sub">Where should we send your order?</p>
+    <div class="field"><label>Full name</label><input id="f-name" value="${a.name||''}" placeholder="Full name"></div>
+    <div class="field-row">
+      <div class="field"><label>Phone number</label><input id="f-phone" value="${a.phone||''}" placeholder="10-digit mobile number"></div>
+      <div class="field"><label>Email</label><input id="f-email" value="${a.email||''}" placeholder="you@email.com"></div>
+    </div>
+    <div class="field"><label>Address</label><textarea id="f-addr" rows="2" placeholder="House no, street, area">${a.line||''}</textarea></div>
+    <div class="field-row">
+      <div class="field"><label>City</label><input id="f-city" value="${a.city||''}" placeholder="City"></div>
+      <div class="field"><label>Pincode</label><input id="f-pin" value="${a.pin||''}" placeholder="6-digit pincode"></div>
+    </div>
+    <p id="addrError" style="color:var(--ember);font-size:12.5px;margin:-4px 0 12px;display:none;">Please fill in all fields with a valid 10-digit phone number.</p>
+    <button class="primary-btn" id="toPayment">Continue to payment</button>
+    <button class="ghost-btn" id="cancelCheckout">Cancel</button>
+  `;
+}
+
+function paymentStepHTML(){
+  const total = cartTotal();
+  return `
+    <button class="back-link" id="backToAddr">← Back to address</button>
+    <h3>Scan to pay</h3>
+    <p class="step-sub">Pay via any UPI app — GPay, PhonePe, Paytm etc.</p>
+    <div class="pay-amount">${fmt(total)}</div>
+    <p class="pay-note">Order for ${checkoutState.address.name}, delivering to ${checkoutState.address.city}</p>
+    <div class="qr-box"><div id="qrcode"></div></div>
+    <p class="pay-note" style="margin-bottom:16px;">This QR would also be texted to ${checkoutState.address.phone} in a live deployment.</p>
+    <button class="primary-btn" id="confirmPaid">I've paid</button>
+    <div class="proto-note">Prototype note: this QR encodes a standard UPI payment string generated in the browser for demo purposes — it isn't wired to a real merchant account. A live site would confirm payment via a payment gateway webhook (e.g. Razorpay/PayU) rather than a self-reported click.</div>
+  `;
+}
+
+function confirmedStepHTML(){
+  const orderId = 'AC' + Math.floor(100000 + Math.random()*900000);
+  return `
+    <div class="confirm-icon">✓</div>
+    <h3 style="text-align:center;">Order confirmed</h3>
+    <p class="order-id">Order #${orderId}</p>
+    <ul class="notice-list">
+      <li><span class="ic">📱</span> Payment QR &amp; order summary sent by SMS to <strong>&nbsp;${checkoutState.address.phone}</strong></li>
+      <li><span class="ic">✉️</span> Receipt &amp; tracking link emailed to <strong>&nbsp;${checkoutState.address.email}</strong></li>
+      <li><span class="ic">🚚</span> Delivering to: ${checkoutState.address.line}, ${checkoutState.address.city} ${checkoutState.address.pin}</li>
+    </ul>
+    <div class="proto-note">Prototype note: this screen simulates the SMS/email step. Actually sending messages needs a backend — e.g. an SMS API (Twilio, MSG91) and an email service (SendGrid, Amazon SES) triggered from your server once the payment gateway confirms the transaction.</div>
+    <button class="primary-btn" id="doneBtn" style="margin-top:18px;">Done</button>
+  `;
+}
+
+function wireModal(){
+  const cancel = document.getElementById('cancelCheckout');
+  if(cancel) cancel.addEventListener('click', closeModal);
+
+  const toPay = document.getElementById('toPayment');
+  if(toPay) toPay.addEventListener('click', ()=>{
+    const name = document.getElementById('f-name').value.trim();
+    const phone = document.getElementById('f-phone').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    const line = document.getElementById('f-addr').value.trim();
+    const city = document.getElementById('f-city').value.trim();
+    const pin = document.getElementById('f-pin').value.trim();
+    const phoneOk = /^\d{10}$/.test(phone);
+    if(!name || !phoneOk || !email || !line || !city || !pin){
+      document.getElementById('addrError').style.display = 'block';
+      return;
+    }
+    checkoutState.address = {name,phone,email,line,city,pin};
+    checkoutState.step = 'payment';
+    renderModal();
+  });
+
+  const back = document.getElementById('backToAddr');
+  if(back) back.addEventListener('click', ()=>{ checkoutState.step='address'; renderModal(); });
+
+  const confirmPaid = document.getElementById('confirmPaid');
+  if(confirmPaid) confirmPaid.addEventListener('click', ()=>{ checkoutState.step='confirmed'; renderModal(); });
+
+  const done = document.getElementById('doneBtn');
+  if(done) done.addEventListener('click', ()=>{
+    state.cart = {};
+    updateCartCount();
+    closeModal();
+  });
+}
+
+function drawQR(){
+  const total = cartTotal();
+  const upiString = `upi://pay?pa=anaarco@upi&pn=AnaarAndCo&am=${total}&cu=INR&tn=OrderPayment`;
+  const el = document.getElementById('qrcode');
+  el.innerHTML = '';
+  new QRCode(el, { text: upiString, width:180, height:180, colorDark:"#140F20", colorLight:"#ffffff" });
+}
+
+/* ---------------- Init ---------------- */
+renderNav();
+renderCatalog();
+updateCartCount();
+</script>
+</body>
+</html>
