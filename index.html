@@ -15,7 +15,7 @@
   </a>
   <button class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="nav">☰</button>
   <nav id="nav" class="nav">
-    <a href="#top">Home</a><a href="#shop">Shop Firecrackers</a><a href="#categories">Product Categories</a><a href="#offers">Special Offers</a><a href="#how">How to Order</a><a href="#contact">Contact Us</a>
+    <a href="#top">Home</a><a href="#shop">Shop Firecrackers</a><a href="#categories">Product Categories</a><a href="#offers">Diwali Combos</a><a href="#how">How to Order</a><a href="#contact">Contact Us</a>
   </nav>
   <div class="hcontact"><a id="hPhone" href="#"></a><a id="hEmail" href="#" hidden></a></div>
   <button class="cartbtn" id="cartBtn" aria-label="Open cart">🛒<span id="cartCount">0</span></button>
@@ -42,7 +42,6 @@
     <label class="sr" for="q">Search products</label><input id="q" type="search" placeholder="Search products…">
     <label class="sr" for="sort">Sort</label>
     <select id="sort"><option value="">Sort: Default</option><option value="asc">Price: Low to High</option><option value="desc">Price: High to Low</option></select>
-    <label class="chk"><input type="checkbox" id="featOnly"> Featured only</label>
   </div>
   <div id="grid" class="grid" aria-live="polite"></div>
 </section>
@@ -63,7 +62,7 @@
 <p class="note"><b>NSA Mulund Crackers</b> · Mobile: <a id="cPhone" href="#"></a> <span id="cEmailWrap" hidden>· Email: <a id="cEmail" href="#"></a></span></p></section>
 </main>
 
-<footer class="foot">© <span id="yr"></span> NSA Mulund Crackers. Order receipt does not mean payment or delivery is complete. <a href="#admin" id="adminLink">Owner</a></footer>
+<footer class="foot">© <span id="yr"></span> NSA Mulund Crackers. Order receipt does not mean payment or delivery is complete.</footer>
 <a id="wa" class="wa" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">💬</a>
 
 <div class="scrim" id="scrim" hidden></div>
@@ -97,23 +96,6 @@
   </div>
 </div>
 
-<div class="modal" id="admin" hidden role="dialog" aria-modal="true" aria-labelledby="aTitle">
-  <div class="mbox">
-    <button class="x" data-close aria-label="Close">✕</button>
-    <h2 id="aTitle">Product Management</h2>
-    <p class="note">Products added here are saved <b>in this browser only</b>. To publish them for all customers, tap “Export”, then copy the entries into <code>products.js</code> on GitHub (put photos in an <code>images/</code> folder) and add prices to the Apps Script <code>PRICES</code> list.</p>
-    <form id="aForm"><label for="aName">Name *</label><input id="aName" required>
-      <label for="aCat">Category *</label><select id="aCat"></select>
-      <label for="aPrice">Price ₹ (leave empty = “Price coming soon”)</label><input id="aPrice" type="number" min="1" step="1">
-      <label for="aMrp">Original price ₹ (optional)</label><input id="aMrp" type="number" min="1" step="1">
-      <label for="aDesc">Description</label><input id="aDesc">
-      <label for="aImg">Photo (optional)</label><input id="aImg" type="file" accept="image/*">
-      <button class="btn gold" type="submit">Add Product</button></form>
-    <div id="aList"></div>
-    <button class="btn ghost dark" id="aExport" type="button">Export products.js entries</button>
-    <textarea id="aOut" rows="6" readonly hidden></textarea>
-  </div>
-</div>
 <script src="products.js"></script>
 <script src="script.js"></script>
 </body>
