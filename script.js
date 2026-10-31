@@ -74,5 +74,10 @@ window.addEventListener('scroll',()=>{$('.hdr').style.boxShadow=scrollY>10?'0 4p
 window.addEventListener('resize',spy);spy();
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});
 /* Image load errors do not bubble, so listen in the capture phase. A failed image falls back once, then reverts to the placeholder. */
+/* "Processing" overlay shown while the order is being saved; blocks double taps and accidental closing. */
+let procTimer=null;
+function procOn(){let o=$('#proc');if(!o){o=document.createElement('div');o.id='proc';o.className='proc';o.setAttribute('role','alert');o.innerHTML='<div><i></i><b>Processing your order…</b><small id="procMsg">Please wait and do not close or refresh this page.</small></div>';document.body.appendChild(o)}o.hidden=false;clearTimeout(procTimer);procTimer=setTimeout(()=>{const m=$('#procMsg');if(m)m.textContent='Still working. This can take up to a minute on a slow connection. Please keep this page open.'},8000)}
+function procOff(){clearTimeout(procTimer);const o=$('#proc');if(o)o.hidden=true}
+window.addEventListener('beforeunload',e=>{if(busy){e.preventDefault();e.returnValue=''}});
 document.addEventListener('error',e=>{const im=e.target;if(im&&im.tagName==='IMG'&&im.classList.contains('pimg'))imgFail(im)},true);
 })();
